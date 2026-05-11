@@ -1,0 +1,36 @@
+# Dépendances
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+.next/
+dist/
+build/
+out/
+
+# Environnement
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Vidéos générées / uploads temporaires
+apps/api/uploads/
+apps/api/temp/
+apps/api/output/
+
+# TypeScript
+*.tsbuildinfo
