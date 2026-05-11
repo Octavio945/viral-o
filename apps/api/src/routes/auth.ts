@@ -1,6 +1,6 @@
-import { Router } from "express";
+import { Router, IRouter } from "express";
 
-const router = Router();
+const router: IRouter = Router();
 
 // POST /api/auth/register
 router.post("/register", async (_req, res) => {

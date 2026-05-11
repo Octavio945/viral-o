@@ -1,18 +1,17 @@
-import { Router, Response, NextFunction } from "express";
+import { Router, IRouter, Response, NextFunction } from "express";
 import { requireAuth, AuthRequest } from "../middleware/auth";
 import { db } from "../db";
 import { generateIdeas } from "../services/openai";
 import { createError } from "../middleware/errorHandler";
 
-const router = Router();
+const router: IRouter = Router();
 
-// POST /api/ideas/generate — générer des idées IA
+// POST /api/ideas/generate — générer et sauvegarder les idées en BDD
 router.post("/generate", requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { theme, network } = req.body;
     if (!theme) return next(createError("Le thème est requis", 400));
 
-    // Récupérer le profil utilisateur pour contextualiser l'IA
     const profileResult = await db.query(
       "SELECT * FROM profiles WHERE user_id = $1",
       [req.userId]
@@ -24,7 +23,26 @@ router.post("/generate", requireAuth, async (req: AuthRequest, res: Response, ne
     const profile = profileResult.rows[0];
     const ideas = await generateIdeas({ theme, network, profile });
 
-    res.json({ success: true, data: ideas });
+    // Sauvegarder chaque idée en BDD et retourner avec leurs IDs
+    const saved = await Promise.all(
+      ideas.map((idea) =>
+        db.query(
+          `INSERT INTO ideas (user_id, theme, title, hook, hashtags, estimated_duration, network)
+           VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+          [
+            req.userId,
+            theme,
+            idea.title,
+            idea.hook,
+            idea.hashtags ?? [],
+            idea.estimated_duration ?? 60,
+            network ?? null,
+          ]
+        ).then((r) => r.rows[0])
+      )
+    );
+
+    res.json({ success: true, data: saved });
   } catch (err) {
     next(err);
   }

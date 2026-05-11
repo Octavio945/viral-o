@@ -1,9 +1,9 @@
-import { Router, Response, NextFunction } from "express";
+import { Router, IRouter, Response, NextFunction } from "express";
 import { requireAuth, AuthRequest } from "../middleware/auth";
 import { db } from "../db";
 import { createError } from "../middleware/errorHandler";
 
-const router = Router();
+const router: IRouter = Router();
 
 // GET /api/profile — récupérer le profil de l'utilisateur connecté
 router.get("/", requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {

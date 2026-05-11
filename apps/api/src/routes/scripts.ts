@@ -1,10 +1,10 @@
-import { Router, Response, NextFunction } from "express";
+import { Router, IRouter, Response, NextFunction } from "express";
 import { requireAuth, AuthRequest } from "../middleware/auth";
 import { db } from "../db";
 import { generateScript } from "../services/openai";
 import { createError } from "../middleware/errorHandler";
 
-const router = Router();
+const router: IRouter = Router();
 
 // POST /api/scripts/generate — générer un script à partir d'une idée
 router.post("/generate", requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -48,6 +48,19 @@ router.patch("/:id", requireAuth, async (req: AuthRequest, res: Response, next: 
     );
     if (result.rows.length === 0) return next(createError("Script introuvable", 404));
     res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/scripts — historique des scripts
+router.get("/", requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const result = await db.query(
+      "SELECT * FROM scripts WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50",
+      [req.userId]
+    );
+    res.json({ success: true, data: result.rows });
   } catch (err) {
     next(err);
   }

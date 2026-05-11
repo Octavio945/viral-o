@@ -20,7 +20,7 @@ export async function generateImage(prompt: string, outputFileName: string): Pro
     response_format: "b64_json",
   });
 
-  const imageData = response.data[0].b64_json;
+  const imageData = response.data?.[0]?.b64_json;
   if (!imageData) throw new Error("Aucune image générée");
 
   const outputPath = path.join(TEMP_DIR, outputFileName);
